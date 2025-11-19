@@ -29,8 +29,9 @@ def test():
 docsCyberdeck = Item("Old Cyberdeck", "An old cyberdeck", test)
 
 class Room:
-    def __init__(self, description):
+    def __init__(self, description,longDescription):
         self.desc = description
+        self.longDesc = longDescription
         self.n = None
         self.ne = None
         self.e = None
@@ -43,28 +44,33 @@ class Room:
         self.down = None
         self.visited = False
         self.items = {}
-        
-    def getShortDescription(self):
+
+    def getItemDesc(self):
         plural = ""
         if len(self.items) > 1:
             plural = "are"
         elif len(self.items) == 1:
             plural = "is"
         else:
-            return self.desc
-        
+            return ""
         itemDesc = f"There {plural} "
         for item in self.items:
             itemDesc += "a " + item
-        return self.desc + "\n" + itemDesc
+        return "\n" + itemDesc
     
+    def getShortDescription(self):
+        return self.desc + self.getItemDesc() 
+
+    def getLongDescription(self):
+        return self.longDesc + self.getItemDesc()
 rooms = {
-    "reaper" : Room("Reaper's Place"),
-    "reaper_basement": Room("Reaper's Basement")
+    "reaper" : Room("Reaper's Place","Long desc"),
+    "reaper_basement": Room("Reaper's Basement","Long desc")
 }
 
 rooms["reaper_basement"].items[docsCyberdeck.name] = docsCyberdeck
 rooms['reaper'].down = rooms['reaper_basement']
+rooms['reaper_basement'].up = rooms['reaper']
 currentRoom = rooms['reaper']
 
 def clear():
@@ -140,9 +146,13 @@ def gameLoop():
                 promptUser = True
                 currentPrompt = f"[{name}]: "
                 if(resp is None or status == 0):
-                    print(currentRoom.getShortDescription())
+                    if(currentRoom.visited):
+                        print(currentRoom.getShortDescription())
+                    else:
+                        print(currentRoom.getLongDescription())
                 elif(status == 1):
-                    animPrint("You can't do that here!")                  
+                    animPrint("You can't do that here!")
+                currentRoom.visited = True                 
 def addCommand(name, func):
     global commands
     commands[name] = {
