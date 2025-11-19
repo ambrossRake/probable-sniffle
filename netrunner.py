@@ -174,6 +174,8 @@ def use(args):
     elif(itemName in inventory):
         inventory[itemName].func()
         
+def look(args):
+    print(currentRoom.longDesc)
 
 def move(direction):
     global currentRoom
@@ -224,6 +226,7 @@ def registerCommands():
     addCommand('nw',move)
     addCommand('take', take)
     addCommand('use', use)
+    addCommand('look', look)
 def main():
     clear()
     registerCommands()
