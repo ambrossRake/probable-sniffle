@@ -12,6 +12,7 @@ currentState = "main_menu"
 lastState = currentState
 promptUser = True
 inventory = {}
+textAnimSpeed = .05
 
 class Item:
     def __init__(self, name, desc, func):
@@ -69,18 +70,19 @@ def clear():
     else:  # For macOS and Linux
         os.system('clear')
 
-def processCommand(userInput):
-    commands[userInput](userInput)
-
 def animPrint(msg):
     for char in msg:
         if char == ".":
-            time.sleep(.35)
+            time.sleep(textAnimSpeed*10)
         print(char+"", end='', flush=True)
-        time.sleep(.02)
+        time.sleep(textAnimSpeed)
 def processUserInput(userInput):
-    if(commands.get(userInput)):
-        commands[userInput]['func'](userInput)
+    parse = userInput.split(' ')
+    if(commands.get(parse[0])): # split userinput by space and use space for params
+        if(len(parse) > 1):
+            commands[parse[0]]['func'](parse[1:])
+        else:
+            commands[parse[0]]['func'](parse[0])
         return 0
     return 1
 
@@ -138,13 +140,19 @@ def gameLoop():
                     print(currentRoom.getShortDescription())
                 elif(status == 1):
                     animPrint("You can't do that here!")                  
-def addCommand(name, func, params):
+def addCommand(name, func):
     global commands
     commands[name] = {
         "func": func,
-        "params": params,
         "access": 0
     }
+
+def take(args):
+    itemName = " ".join(args)
+    if(itemName.lower() in currentRoom.items.lower()):
+        inventory[itemName] = currentRoom.items[itemName]
+        del currentRoom.items[itemName]
+        print("\nYou take the " + itemName)
 
 def move(direction):
     global currentRoom
@@ -183,17 +191,17 @@ def move(direction):
     return 0
 
 def registerCommands():
-    addCommand('up',move, "up")
-    addCommand('down',move, "down")
-    addCommand('n',move, "n")
-    addCommand('ne',move, "ne")
-    addCommand('e',move, "e")
-    addCommand('se',move, "se")
-    addCommand('s',move, "s")
-    addCommand('sw',move, "sw")
-    addCommand('w',move, "w")
-    addCommand('nw',move, "nw")
-
+    addCommand('up',move)
+    addCommand('down',move)
+    addCommand('n',move)
+    addCommand('ne',move)
+    addCommand('e',move)
+    addCommand('se',move)
+    addCommand('s',move)
+    addCommand('sw',move)
+    addCommand('w',move)
+    addCommand('nw',move)
+    addCommand('take', take)
 def main():
     clear()
     registerCommands()
