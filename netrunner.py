@@ -12,7 +12,7 @@ currentState = "main_menu"
 lastState = currentState
 promptUser = True
 inventory = {}
-textAnimSpeed = .05
+textAnimSpeed = .005
 
 class Item:
     def __init__(self, name, desc, func):
@@ -23,7 +23,10 @@ class Item:
     def use(self,params):
         self.func(params)
 
-docsCyberdeck = Item("Old Cyberdeck", "An old cyberdeck", None)
+def test():
+    print('Used cyberdeck')
+    
+docsCyberdeck = Item("Old Cyberdeck", "An old cyberdeck", test)
 
 class Room:
     def __init__(self, description):
@@ -74,7 +77,7 @@ def animPrint(msg):
     for char in msg:
         if char == ".":
             time.sleep(textAnimSpeed*10)
-        print(char+"", end='', flush=True)
+        print(char, end='', flush=True)
         time.sleep(textAnimSpeed)
 def processUserInput(userInput):
     parse = userInput.split(' ')
@@ -149,10 +152,18 @@ def addCommand(name, func):
 
 def take(args):
     itemName = " ".join(args)
-    if(itemName.lower() in currentRoom.items.lower()):
+    if(itemName in currentRoom.items):
         inventory[itemName] = currentRoom.items[itemName]
         del currentRoom.items[itemName]
         print("\nYou take the " + itemName)
+
+def use(args):
+    itemName = " ".join(args)
+    if(itemName in currentRoom.items):
+        currentRoom.items[itemName].func()
+    elif(itemName in inventory):
+        inventory[itemName].func()
+        
 
 def move(direction):
     global currentRoom
@@ -202,6 +213,7 @@ def registerCommands():
     addCommand('w',move)
     addCommand('nw',move)
     addCommand('take', take)
+    addCommand('use', use)
 def main():
     clear()
     registerCommands()
