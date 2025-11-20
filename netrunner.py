@@ -94,6 +94,8 @@ def processUserInput(userInput):
         else:
             commands[parse[0]]['func'](parse[0])
         return 0
+    elif(len(parse[0]) == 0):
+        return 0
     return 1
 
 def gameLoop():
@@ -101,7 +103,7 @@ def gameLoop():
     global promptUser
     global currentPrompt
     global name
-    
+    global accessLevel
     while gameRunning:
         if promptUser:
             resp = input(currentPrompt)
@@ -140,8 +142,10 @@ def gameLoop():
                     print("\n\n\n\nYou can now use basic movement commands. Use the help command for more info.")
                     currentPrompt = "Press Enter To Continue"
                 else:
+                    promptUser = False
                     currentState = "meat_space"
                     accessLevel = 1
+                    print("\n")
                     clear()
             case "meat_space":
                 promptUser = True
@@ -218,7 +222,7 @@ def move(direction):
 def dispHelp(args):
     print("---RTFMan---")
     for name in commands:
-        print(f"{name} - ")
+        print(f"{name} - {commands[name]['description']}")
 
 def registerCommands():
     addCommand('up',move,"Move up")
