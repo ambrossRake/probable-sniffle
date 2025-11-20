@@ -1,86 +1,25 @@
 import os
 import time
-from enum import Enum
-
+from character import Character
+from states import States
+from item import Item
+from room import Room
 gameRunning = True;
 commands = {};
 currentPrompt = "";
 promptUser = True
 textAnimSpeed = .005
 player = {}
-
-class Character:
-
-    def __init__(self,name = "", age = 0, eddies = 0, reputation = 0, inventory = {}, accessLevel = 0):
-        self.name = name
-        self.age = age
-        self.eddies = eddies
-        self.rep = reputation
-        self.inventory = inventory
-        self.accessLevel = accessLevel
-
-
 player["Character"] = Character()
-
-class States(Enum):
-    MAIN_MENU = 0
-    NIGHT_CITY = 1
-    RIPPER_DOC = 2
-    MEAT_SPACE = 3
-    
-
 currentState = States.MAIN_MENU
 
 
-class Item:
-    def __init__(self, name, desc, func):
-        self.name = name
-        self.desc = desc
-        self.func = func
-
-    def use(self,params):
-        self.func(params)
 
 def test():
     print('Used cyberdeck')
     
 docsCyberdeck = Item("Old Cyberdeck", "An old cyberdeck", test)
 
-class Room:
-    def __init__(self, description,longDescription):
-        self.desc = description
-        self.longDesc = longDescription
-        self.n = None
-        self.ne = None
-        self.e = None
-        self.se = None
-        self.s = None
-        self.sw = None
-        self.w = None
-        self.nw = None
-        self.up = None
-        self.down = None
-        self.visited = False
-        self.items = {}
-
-    def getItemDesc(self):
-        plural = ""
-        if len(self.items) > 1:
-            plural = "are"
-        elif len(self.items) == 1:
-            plural = "is"
-        else:
-            return ""
-        itemDesc = f"There {plural} "
-        for item in self.items:
-            itemDesc += "a " + item
-        return "\n" + itemDesc
-    
-    def getShortDescription(self):
-        return self.desc + self.getItemDesc() 
-
-    def getLongDescription(self):
-        return self.longDesc + self.getItemDesc()
 rooms = {
     "reaper" : Room("Reaper's Place","Long desc"),
     "reaper_basement": Room("Reaper's Basement","Long desc")
@@ -183,18 +122,20 @@ def addCommand(name, func, desc=""):
     }
 
 def take(args):
+    global player
     itemName = " ".join(args)
     if(itemName in currentRoom.items):
-        inventory[itemName] = currentRoom.items[itemName]
+        player["Character"].inventory[itemName] = currentRoom.items[itemName]
         del currentRoom.items[itemName]
         print("\nYou take the " + itemName)
 
 def use(args):
+    global player
     itemName = " ".join(args)
     if(itemName in currentRoom.items):
         currentRoom.items[itemName].func()
-    elif(itemName in inventory):
-        inventory[itemName].func()
+    elif(itemName in player["Character"].inventory):
+        player["Character"].inventory[itemName].func()
         
 def look(args):
     print(currentRoom.longDesc)
