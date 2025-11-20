@@ -1,5 +1,6 @@
 import os
 import time
+from enum import Enum
 
 gameRunning = True;
 commands = {};
@@ -8,12 +9,20 @@ name = "";
 age = 0;
 eddies = 0;
 rep = 0;
-currentState = "main_menu"
-lastState = currentState
 promptUser = True
 inventory = {}
 textAnimSpeed = .005
 accessLevel = 0
+
+class States(Enum):
+    MAIN_MENU = 0
+    NIGHT_CITY = 1
+    RIPPER_DOC = 2
+    MEAT_SPACE = 3
+    
+
+currentState = States.MAIN_MENU
+
 
 class Item:
     def __init__(self, name, desc, func):
@@ -112,10 +121,10 @@ def gameLoop():
             clear()
             
         match currentState:
-            case "main_menu":
+            case States.MAIN_MENU:
                 match resp:
                     case "1":
-                        currentState = "night_city"
+                        currentState = States.NIGHT_CITY
                         promptUser = False
                     case "2":
                         print("Config");
@@ -123,12 +132,12 @@ def gameLoop():
                         print("Credits");
                     case "4":
                         print("Quit");
-            case "night_city":
+            case States.NIGHT_CITY:
                 animPrint("You've finally made it, well sort of. You've reached the famous Night City - a site to behold, a bit different than you're accustomed to, but you've ran out of options. You were made an outcast by your group and after months of scraping by you've finally managed to afford a cheap apartment. Your rent's due by the end of the month and your running low on cash. While crashing at home for the night sounds like heaven, it would be  best to go see a ripperdoc you'll need a cheap cyberdeck if you expect to live out here and netrunning is all you know.\n\n\n\n")
                 currentPrompt = "Press Enter To Continue"
                 promptUser = True
-                currentState = "ripperdoc"
-            case "ripperdoc":
+                currentState = States.RIPPER_DOC
+            case States.RIPPER_DOC:
                 if not name:
                     clear()
                     animPrint("You decide to take a stroll through the district and after a few hours getting acquanted you've gathered that if your looking for quantity, you need to see the doc known as 'The Reaper'. He's known to carry unique hardware and can handle most implants no questions asked. You decide this is the best bet.\nYou arrive at The Reaper's spot - its a pretty unassuming building and isn't visibly marked. You take a beat before reaching for the door. Just as you do the door swings open. 'COME ON NOW I AIN'T GOT ALL DAY' you hear someone shout from the inside. You startle just for a moment before taking a look inside the building. It's dark but you see some dim red lights marking a path down some stairs.\nYou don't waste any time and begin following the path.\nAs you do, you hear the same voice from earlier. The voice is softer now - a low almost calming tone.\n\n'Ahh another runner; not many of us left around here. Don't bother looking for me, I'm out at the moment. What's your name kid? ")
@@ -143,11 +152,11 @@ def gameLoop():
                     currentPrompt = "Press Enter To Continue"
                 else:
                     promptUser = False
-                    currentState = "meat_space"
+                    currentState = States.MEAT_SPACE
                     accessLevel = 1
                     print("\n")
                     clear()
-            case "meat_space":
+            case States.MEAT_SPACE:
                 promptUser = True
                 currentPrompt = f"[{name}]: "
                 if(resp is None or status == 0):
