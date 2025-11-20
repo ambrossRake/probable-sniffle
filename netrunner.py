@@ -13,6 +13,7 @@ lastState = currentState
 promptUser = True
 inventory = {}
 textAnimSpeed = .005
+accessLevel = 0
 
 class Item:
     def __init__(self, name, desc, func):
@@ -87,7 +88,7 @@ def animPrint(msg):
         time.sleep(textAnimSpeed)
 def processUserInput(userInput):
     parse = userInput.split(' ')
-    if(commands.get(parse[0])): # split userinput by space and use space for params
+    if(commands.get(parse[0]) and commands.get(parse[0])['access'] <= accessLevel): # split userinput by space and use space for params
         if(len(parse) > 1):
             commands[parse[0]]['func'](parse[1:])
         else:
@@ -136,11 +137,11 @@ def gameLoop():
                     name = resp
                     resp = None
                     animPrint(name + " Huh? Looks like your a real nobody kid, but hey that's not the worse thing. Just looking at ya I can tell you don't have any money. Hell I almost pity you. I'll tell you what, since I'm out right now, how about you run the shop for a bit?'\n...'Alrighty then keep heading down to the basement, once you're there go ahead and get setup on my rig. I'll explain the rest once you're in.")
-                    animPrint("\n\n\n\nYou can now use basic movement commands. Use the help command for more info.")
+                    print("\n\n\n\nYou can now use basic movement commands. Use the help command for more info.")
                     currentPrompt = "Press Enter To Continue"
-                    promptUser = False
                 else:
                     currentState = "meat_space"
+                    accessLevel = 1
                     clear()
             case "meat_space":
                 promptUser = True
@@ -153,11 +154,12 @@ def gameLoop():
                 elif(status == 1):
                     animPrint("You can't do that here!")
                 currentRoom.visited = True                 
-def addCommand(name, func):
+def addCommand(name, func, desc=""):
     global commands
     commands[name] = {
         "func": func,
-        "access": 0
+        "access": 1,
+        "description": desc
     }
 
 def take(args):
@@ -213,45 +215,54 @@ def move(direction):
             return 1
     return 0
 
+def dispHelp(args):
+    print("---RTFMan---")
+    for name in commands:
+        print(f"{name} - ")
+
 def registerCommands():
-    addCommand('up',move)
-    addCommand('down',move)
-    addCommand('n',move)
-    addCommand('ne',move)
-    addCommand('e',move)
-    addCommand('se',move)
-    addCommand('s',move)
-    addCommand('sw',move)
-    addCommand('w',move)
-    addCommand('nw',move)
-    addCommand('take', take)
-    addCommand('use', use)
-    addCommand('look', look)
+    addCommand('up',move,"Move up")
+    addCommand('down',move, "Move down")
+    addCommand('n',move, "Move north")
+    addCommand('ne',move, "Move north-east")
+    addCommand('e',move, "Move east")
+    addCommand('se',move, "Move south-east")
+    addCommand('s',move, "Move south")
+    addCommand('sw',move, "Move south-west")
+    addCommand('w',move, "Move west")
+    addCommand('nw',move, "Move north-west")
+    addCommand('take', take, "Take an item from the room you're in")
+    addCommand('use', use, "Use an item in the room or in your inventory")
+    addCommand('look', look, "Look around the room you're in")
+    addCommand('help',dispHelp, "What do you think?")
 def main():
     clear()
     registerCommands()
     logo = r"""
- _________        ___.                                     __       
- \_   ___ \___.__.\_ |__   _________________  __ __  ____ |  | __   
-/    \  \<   |  | | __ \_/ __ \_  __ \____ \|  |  \/    \|  |/ /   
-\     \___\___  | | \_\ \  ___/|  | \/  |_> >  |  /   |  \    <    
- \______  / ____| |___  /\___  >__|  |   __/|____/|___|  /__|_ \   
-        \/\/          \/     \/      |__|              \/     \/   
-
-
-_________ _______       .___________      __________________      .___
-\_   ___ \\   _  \    __| _/\_____  \     \______   \_____  \   __| _/
-/    \  \//  /_\  \  / __ |   _(__  <     |       _/ _(__  <  / __ | 
-\     \___\  \_/   \/ /_/ |  /       \    |    |   \/       \/ /_/ | 
- \______  /\_____  /\____ | /______  /    |____|_  /______  /\____ | 
-        \/       \/      \/        \/            \/       \/      \/"""
-    print(logo);
-    print('\nNetrunner - C0d3 Z3r0\n-By R4k3\n\n\n\n');
-    print('---Main Menu---')
-    print('1) Start Game')
-    print('2) Config')
-    print('3) Credits')
-    print('4) Quit')
+   _____      _                                 _               
+  / ____|    | |                               | |              
+ | |    _   _| |__   ___ _ __ _ __  _   _ _ __ | | __           
+ | |   | | | | '_ \ / _ \ '__| '_ \| | | | '_ \| |/ /           
+ | |___| |_| | |_) |  __/ |  | |_) | |_| | | | |   <            
+  \_____\__, |_.__/ \___|_|  | .__/ \__,_|_| |_|_|\_\           
+         __/ |               | |             
+       _|___/   ___        _ |_|___      _____    ____        _ 
+      / ____|  / _ \      | | |___ \    |  __ \  |___ \      | |
+     | |      | | | |   __| |   __) |   | |__) |   __) |   __| |
+     | |      | | | |  / _` |  |__ <    |  _  /   |__ <   / _` |
+     | |____  | |_| | | (_| |  ___) |   | | \ \   ___) | | (_| |
+      \_____|  \___/   \__,_| |____/    |_|  \_\ |____/   \__,_|
+                                                                
+                                                                
+    """
+    animPrint(logo);
+    print('\n')
+    animPrint('\t\t<===|NETRUNNER] - [C0d3 Z3r0|===>\n\n\t\t\t-Written by Rake\n\n\n');
+    print('\t\t\t  --MAIN MENU--\n')
+    print('\t\t\t   1) Start Game')
+    print('\t\t\t   2) Config')
+    print('\t\t\t   3) Credits')
+    print('\t\t\t   4) Quit\n\n')
     global currentPrompt
     currentPrompt = "Select an option:"
     gameLoop();
