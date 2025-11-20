@@ -5,14 +5,22 @@ from enum import Enum
 gameRunning = True;
 commands = {};
 currentPrompt = "";
-name = "";
-age = 0;
-eddies = 0;
-rep = 0;
 promptUser = True
-inventory = {}
 textAnimSpeed = .005
-accessLevel = 0
+player = {}
+
+class Character:
+
+    def __init__(self,name = "", age = 0, eddies = 0, reputation = 0, inventory = {}, accessLevel = 0):
+        self.name = name
+        self.age = age
+        self.eddies = eddies
+        self.rep = reputation
+        self.inventory = inventory
+        self.accessLevel = accessLevel
+
+
+player["Character"] = Character()
 
 class States(Enum):
     MAIN_MENU = 0
@@ -97,7 +105,7 @@ def animPrint(msg):
         time.sleep(textAnimSpeed)
 def processUserInput(userInput):
     parse = userInput.split(' ')
-    if(commands.get(parse[0]) and commands.get(parse[0])['access'] <= accessLevel): # split userinput by space and use space for params
+    if(commands.get(parse[0]) and commands.get(parse[0])['access'] <= player["Character"].accessLevel):
         if(len(parse) > 1):
             commands[parse[0]]['func'](parse[1:])
         else:
@@ -111,8 +119,7 @@ def gameLoop():
     global currentState
     global promptUser
     global currentPrompt
-    global name
-    global accessLevel
+    global player
     while gameRunning:
         if promptUser:
             resp = input(currentPrompt)
@@ -138,27 +145,27 @@ def gameLoop():
                 promptUser = True
                 currentState = States.RIPPER_DOC
             case States.RIPPER_DOC:
-                if not name:
+                if not player["Character"].name:
                     clear()
                     animPrint("You decide to take a stroll through the district and after a few hours getting acquanted you've gathered that if your looking for quantity, you need to see the doc known as 'The Reaper'. He's known to carry unique hardware and can handle most implants no questions asked. You decide this is the best bet.\nYou arrive at The Reaper's spot - its a pretty unassuming building and isn't visibly marked. You take a beat before reaching for the door. Just as you do the door swings open. 'COME ON NOW I AIN'T GOT ALL DAY' you hear someone shout from the inside. You startle just for a moment before taking a look inside the building. It's dark but you see some dim red lights marking a path down some stairs.\nYou don't waste any time and begin following the path.\nAs you do, you hear the same voice from earlier. The voice is softer now - a low almost calming tone.\n\n'Ahh another runner; not many of us left around here. Don't bother looking for me, I'm out at the moment. What's your name kid? ")
                     currentPrompt = "\nName? "
                     promptUser = True
-                    name = "?"
-                elif(name == "?"):
-                    name = resp
+                    player["Character"].name = "?"
+                elif(player["Character"].name == "?"):
+                    player["Character"].name = resp
                     resp = None
-                    animPrint(name + " Huh? Looks like your a real nobody kid, but hey that's not the worse thing. Just looking at ya I can tell you don't have any money. Hell I almost pity you. I'll tell you what, since I'm out right now, how about you run the shop for a bit?'\n...'Alrighty then keep heading down to the basement, once you're there go ahead and get setup on my rig. I'll explain the rest once you're in.")
+                    animPrint(player["Character"].name + " Huh? Looks like your a real nobody kid, but hey that's not the worse thing. Just looking at ya I can tell you don't have any money. Hell I almost pity you. I'll tell you what, since I'm out right now, how about you run the shop for a bit?'\n...'Alrighty then keep heading down to the basement, once you're there go ahead and get setup on my rig. I'll explain the rest once you're in.")
                     print("\n\n\n\nYou can now use basic movement commands. Use the help command for more info.")
                     currentPrompt = "Press Enter To Continue"
                 else:
                     promptUser = False
                     currentState = States.MEAT_SPACE
-                    accessLevel = 1
+                    player["Character"].accessLevel = 1
                     print("\n")
                     clear()
             case States.MEAT_SPACE:
                 promptUser = True
-                currentPrompt = f"[{name}]: "
+                currentPrompt = f"[{player['Character'].name}]: "
                 if(resp is None or status == 0):
                     if(currentRoom.visited):
                         print(currentRoom.getShortDescription())
