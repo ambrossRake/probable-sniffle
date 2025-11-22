@@ -4,17 +4,11 @@ from character import Character
 from states import States
 from item import Item
 from room import Room
+from textutils import *
+from commands import Commands 
+
 gameRunning = True;
-commands = {};
-currentPrompt = "";
-promptUser = True
-textAnimSpeed = .005
 player = {}
-player["Character"] = Character()
-currentState = States.MAIN_MENU
-
-
-
 def test():
     print('Used cyberdeck')
     
@@ -28,38 +22,31 @@ rooms = {
 rooms["reaper_basement"].items[docsCyberdeck.name] = docsCyberdeck
 rooms['reaper'].down = rooms['reaper_basement']
 rooms['reaper_basement'].up = rooms['reaper']
-currentRoom = rooms['reaper']
 
-def clear():
-    if os.name == 'nt':  # For Windows
-        os.system('cls')
-    else:  # For macOS and Linux
-        os.system('clear')
+player["Character"] = Character(rooms['reaper'])
 
-def animPrint(msg):
-    for char in msg:
-        if char == ".":
-            time.sleep(textAnimSpeed*10)
-        print(char, end='', flush=True)
-        time.sleep(textAnimSpeed)
 def processUserInput(userInput):
+    global player
     parse = userInput.split(' ')
-    if(commands.get(parse[0]) and commands.get(parse[0])['access'] <= player["Character"].accessLevel):
-        if(len(parse) > 1):
-            commands[parse[0]]['func'](parse[1:])
-        else:
-            commands[parse[0]]['func'](parse[0])
+    if(Commands.get(parse[0])):
+        command = Commands.get(parse[0])()
+        if(command.accessLevel <= player["Character"].accessLevel):     
+            if(len(parse) > 1):
+                command.run(player["Character"],parse[1:])
+            else:
+                command.run(player["Character"],parse[0])
         return 0
     elif(len(parse[0]) == 0):
         return 0
     return 1
 
 def gameLoop():
-    global currentState
-    global promptUser
-    global currentPrompt
+    currentState = States.MAIN_MENU
+    promptUser = True
+    currentPrompt = "Select an option:"
     global player
     while gameRunning:
+        currentRoom = player['Character'].currentRoom
         if promptUser:
             resp = input(currentPrompt)
             status = processUserInput(resp)    # 0 means OK 1 means FAILED
@@ -106,12 +93,13 @@ def gameLoop():
                 promptUser = True
                 currentPrompt = f"[{player['Character'].name}]: "
                 if(resp is None or status == 0):
-                    if(currentRoom.visited):
-                        print(currentRoom.getShortDescription())
+                    if(player["Character"].currentRoom.visited):
+                        print(player["Character"].currentRoom.getShortDescription())
                     else:
-                        print(currentRoom.getLongDescription())
+                        print(player["Character"].currentRoom.getLongDescription())
                 elif(status == 1):
                     animPrint("You can't do that here!")
+                    print("\n")
                 currentRoom.visited = True                 
 def addCommand(name, func, desc=""):
     global commands
@@ -136,69 +124,14 @@ def use(args):
         currentRoom.items[itemName].func()
     elif(itemName in player["Character"].inventory):
         player["Character"].inventory[itemName].func()
-        
-def look(args):
-    print(currentRoom.longDesc)
-
-def move(direction):
-    global currentRoom
-    match direction:
-        case "up":
-            currentRoom = currentRoom.up or currentRoom
-            return 1
-        case "down":
-            currentRoom = currentRoom.down or currentRoom
-            return 1
-        case "n":
-            currentRoom = currentRoom.n or currentRoom
-            return 1
-        case "ne":
-            currentRoom = currentRoom.ne or currentRoom
-            return 1
-        case "e":
-            currentRoom = currentRoom.e or currentRoom
-            return 1
-        case "se":
-            currentRoom = currentRoom.se or currentRoom
-            return 1
-        case "s":
-            currentRoom = currentRoom.s or currentRoom
-            return 1
-        case "sw":
-            currentRoom = currentRoom.sw or currentRoom
-            return 1
-        case "w":
-            currentRoom = currentRoom.w or currentRoom
-            return 1
-        case "nw":
-            currentRoom = currentRoom.nw or currentRoom
-        case "_":
-            return 1
-    return 0
 
 def dispHelp(args):
     print("---RTFMan---")
     for name in commands:
         print(f"{name} - {commands[name]['description']}")
 
-def registerCommands():
-    addCommand('up',move,"Move up")
-    addCommand('down',move, "Move down")
-    addCommand('n',move, "Move north")
-    addCommand('ne',move, "Move north-east")
-    addCommand('e',move, "Move east")
-    addCommand('se',move, "Move south-east")
-    addCommand('s',move, "Move south")
-    addCommand('sw',move, "Move south-west")
-    addCommand('w',move, "Move west")
-    addCommand('nw',move, "Move north-west")
-    addCommand('take', take, "Take an item from the room you're in")
-    addCommand('use', use, "Use an item in the room or in your inventory")
-    addCommand('look', look, "Look around the room you're in")
-    addCommand('help',dispHelp, "What do you think?")
 def main():
     clear()
-    registerCommands()
     logo = r"""
    _____      _                                 _               
   / ____|    | |                               | |              
